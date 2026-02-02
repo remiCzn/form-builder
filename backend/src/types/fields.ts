@@ -1,62 +1,60 @@
-import { Type } from "@sinclair/typebox";
+import { t } from "elysia";
 
-export const FieldType = Type.Union([
-  Type.Literal("TEXT"),
-  Type.Literal("NUMBER"),
-  Type.Literal("DROPDOWN"),
+export const FieldType = t.Union([
+  t.Literal("TEXT"),
+  t.Literal("NUMBER"),
+  t.Literal("DROPDOWN"),
 ]);
 
 export type FieldType = (typeof FieldType)["static"];
 
-export const CreateField = Type.Object({
+export const CreateField = t.Object({
   type: FieldType,
-  label: Type.String({ minLength: 1 }),
-  required: Type.Optional(Type.Boolean()),
-  config: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+  label: t.String({ minLength: 1 }),
+  required: t.Optional(t.Boolean()),
+  config: t.Optional(t.Record(t.String(), t.Unknown())),
 });
 
 export type CreateField = (typeof CreateField)["static"];
 
-export const UpdateField = Type.Object({
-  type: Type.Optional(FieldType),
-  label: Type.Optional(Type.String({ minLength: 1 })),
-  required: Type.Optional(Type.Boolean()),
-  config: Type.Optional(
-    Type.Union([Type.Record(Type.String(), Type.Unknown()), Type.Null()]),
-  ),
+export const UpdateField = t.Object({
+  type: t.Optional(FieldType),
+  label: t.Optional(t.String({ minLength: 1 })),
+  required: t.Optional(t.Boolean()),
+  config: t.Optional(t.Union([t.Record(t.String(), t.Unknown()), t.Null()])),
 });
 
 export type UpdateField = (typeof UpdateField)["static"];
 
-export const FieldId = Type.Object({
-  fieldId: Type.String(),
+export const FieldId = t.Object({
+  fieldId: t.String(),
 });
 
 export type FieldId = (typeof FieldId)["static"];
 
-export const FormFieldParams = Type.Object({
-  id: Type.String(),
-  fieldId: Type.String(),
+export const FormFieldParams = t.Object({
+  id: t.String(),
+  fieldId: t.String(),
 });
 
 export type FormFieldParams = (typeof FormFieldParams)["static"];
 
-export const ReorderFields = Type.Object({
-  fieldOrder: Type.Array(Type.String()),
+export const ReorderFields = t.Object({
+  fieldOrder: t.Array(t.String()),
 });
 
 export type ReorderFields = (typeof ReorderFields)["static"];
 
-export const Field = Type.Object({
-  id: Type.String(),
-  formId: Type.String(),
+export const Field = t.Object({
+  id: t.String(),
+  formId: t.String(),
   type: FieldType,
-  label: Type.String(),
-  required: Type.Boolean(),
-  order: Type.Number(),
-  config: Type.Union([Type.Record(Type.String(), Type.Unknown()), Type.Null()]),
-  createdAt: Type.Date(),
-  updatedAt: Type.Date(),
+  label: t.String(),
+  required: t.Boolean(),
+  order: t.Number(),
+  config: t.Union([t.Record(t.String(), t.Unknown()), t.Null()]),
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
 });
 
 export type Field = (typeof Field)["static"];

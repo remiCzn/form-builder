@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@elysiajs/node": "^1.4.3",
+		"@elysiajs/static": "^1.4.7",
 		"@libsql/client": "^0.17.0",
 		"@sinclair/typebox": "^0.34.48",
 		"dotenv": "^17.2.3",

@@ -1,16 +1,17 @@
-import { FieldsService } from "services/fields";
-import { FormsService } from "services/forms";
+import { Elysia, t } from "elysia";
+import { FieldsService } from "../services/fields.js";
+import { FormsService } from "../services/forms.js";
 import {
   CreateField,
   Field,
   FormFieldParams,
   ReorderFields,
   UpdateField,
-} from "types/fields";
-import { CreateForm, Form, FormId, UpdateForm } from "types/forms";
-import { Elysia, t } from "elysia";
+} from "../types/fields.js";
+import { CreateForm, Form, FormId, UpdateForm } from "../types/forms.js";
 
 export const api = new Elysia({ prefix: "/api" })
+  .get("/", () => "Hello World")
   .get(
     "/forms",
     async () => {

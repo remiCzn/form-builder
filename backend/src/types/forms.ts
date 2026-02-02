@@ -1,24 +1,24 @@
-import { Type } from "@sinclair/typebox";
+import { t } from "elysia";
 
-export const CreateForm = Type.Object({
-  name: Type.String({
+export const CreateForm = t.Object({
+  name: t.String({
     minLength: 1,
   }),
-  slug: Type.String({
+  slug: t.String({
     minLength: 1,
   }),
 });
 
 export type CreateForm = (typeof CreateForm)["static"];
 
-export const UpdateForm = Type.Object({
-  name: Type.Optional(
-    Type.String({
+export const UpdateForm = t.Object({
+  name: t.Optional(
+    t.String({
       minLength: 1,
     }),
   ),
-  slug: Type.Optional(
-    Type.String({
+  slug: t.Optional(
+    t.String({
       minLength: 1,
     }),
   ),
@@ -26,23 +26,23 @@ export const UpdateForm = Type.Object({
 
 export type UpdateForm = (typeof UpdateForm)["static"];
 
-export const FormId = Type.Object({
-  id: Type.String(),
+export const FormId = t.Object({
+  id: t.String(),
 });
 
 export type FormId = (typeof FormId)["static"];
 
-export const Form = Type.Object({
-  id: Type.String(),
-  name: Type.String(),
-  slug: Type.String(),
-  status: Type.Enum({
+export const Form = t.Object({
+  id: t.String(),
+  name: t.String(),
+  slug: t.String(),
+  status: t.Enum({
     DRAFT: "DRAFT",
     PUBLISHED: "PUBLISHED",
   }),
-  publishedAt: Type.Union([Type.Null(), Type.Date()]),
-  createdAt: Type.Date(),
-  updatedAt: Type.Date(),
+  publishedAt: t.Union([t.Null(), t.Date()]),
+  createdAt: t.Date(),
+  updatedAt: t.Date(),
 });
 
 export type Form = (typeof Form)["static"];

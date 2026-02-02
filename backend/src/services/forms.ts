@@ -1,8 +1,8 @@
-import { formsTable } from "db/schema";
-import { CreateForm, Form, UpdateForm } from "types/forms";
+import { CreateForm, Form, UpdateForm } from "../types/forms.js";
 import { eq } from "drizzle-orm";
-import db from "lib/db";
+import db from "../lib/db.js";
 import { status } from "elysia";
+import { formsTable } from "../db/schema.js";
 
 export class FormsService {
   static async getForms(): Promise<Form[]> {

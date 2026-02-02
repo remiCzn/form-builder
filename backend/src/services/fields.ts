@@ -1,8 +1,8 @@
-import { fieldsTable, formsTable } from "db/schema";
-import { CreateField, UpdateField } from "types/fields";
 import { and, asc, eq, max } from "drizzle-orm";
-import db from "lib/db";
 import { status } from "elysia";
+import db from "../lib/db.js";
+import { fieldsTable, formsTable } from "../db/schema.js";
+import type { CreateField, UpdateField } from "../types/fields.js";
 
 export class FieldsService {
   static async getFields(formId: string) {
@@ -43,7 +43,11 @@ export class FieldsService {
     return created;
   }
 
-  static async updateField(formId: string, fieldId: string, field: UpdateField) {
+  static async updateField(
+    formId: string,
+    fieldId: string,
+    field: UpdateField,
+  ) {
     await this.ensureFormExists(formId);
 
     const now = Date.now();
@@ -87,7 +91,10 @@ export class FieldsService {
             updatedAt: new Date(now),
           })
           .where(
-            and(eq(fieldsTable.id, fieldOrder[i]), eq(fieldsTable.formId, formId)),
+            and(
+              eq(fieldsTable.id, fieldOrder[i] ?? "0"),
+              eq(fieldsTable.formId, formId),
+            ),
           );
       }
     });
