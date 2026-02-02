@@ -1,4 +1,5 @@
 import { t } from "elysia";
+import { FieldType } from "./fields.js";
 
 export const CreateForm = t.Object({
   name: t.String({
@@ -46,3 +47,31 @@ export const Form = t.Object({
 });
 
 export type Form = (typeof Form)["static"];
+
+export const GenerateFormBody = t.Object({
+  prompt: t.String({ minLength: 1 }),
+});
+
+export type GenerateFormBody = (typeof GenerateFormBody)["static"];
+
+export const GeneratedFieldConfig = t.Object({
+  options: t.Array(t.String({ minLength: 1 })),
+});
+
+export const GeneratedField = t.Object({
+  label: t.String({ minLength: 1 }),
+  type: FieldType,
+  required: t.Boolean(),
+  config: GeneratedFieldConfig,
+});
+
+export type GeneratedField = (typeof GeneratedField)["static"];
+
+export const GeneratedForm = t.Object({
+  name: t.String({ minLength: 1 }),
+  slug: t.String({ minLength: 1 }),
+  description: t.String({ minLength: 1 }),
+  fields: t.Array(GeneratedField),
+});
+
+export type GeneratedForm = (typeof GeneratedForm)["static"];

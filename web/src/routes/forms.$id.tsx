@@ -10,10 +10,18 @@ import { FormPreview, type PreviewField } from "@/components/forms/formPreview";
 import { StatusBadge } from "@/components/forms/status-badge";
 import { PageShell } from "@/components/layout/page-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useFields } from "@/services/fields";
+import { useFields, useGenerateFields } from "@/services/fields";
 import { useForm, usePublishForm, useUpdateForm } from "@/services/forms";
 
 export const Route = createFileRoute("/forms/$id")({
@@ -32,8 +40,11 @@ function RouteComponent() {
   const navigate = useNavigate();
   const updateForm = useUpdateForm(id);
   const publishForm = usePublishForm(id);
+  const generateFields = useGenerateFields(id);
   const [isPreviewOpen, setIsPreviewOpen] = useState(true);
   const [previewDraft, setPreviewDraft] = useState<PreviewDraft | null>(null);
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+  const [prompt, setPrompt] = useState("");
 
   const errorMessage = isError ? getErrorMessage(error) : null;
   const updateErrorMessage = updateForm.isError
@@ -41,6 +52,9 @@ function RouteComponent() {
     : null;
   const publishErrorMessage = publishForm.isError
     ? getErrorMessage(publishForm.error)
+    : null;
+  const generateErrorMessage = generateFields.isError
+    ? getErrorMessage(generateFields.error)
     : null;
   const fieldsErrorMessage = fieldsError
     ? getErrorMessage(fieldsErrorResponse)
@@ -203,6 +217,7 @@ function RouteComponent() {
               formId={id}
               onPreviewChange={setPreviewDraft}
               isReadOnly={data.status === "PUBLISHED"}
+              onGenerateClick={() => setIsAiDialogOpen(true)}
             />
           </div>
 
@@ -218,6 +233,65 @@ function RouteComponent() {
           ) : null}
         </div>
       ) : null}
+      <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generer les champs avec l&apos;IA</DialogTitle>
+            <DialogDescription>
+              Decrivez le formulaire attendu, puis lancez la generation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <textarea
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder="Ex: Formulaire de demande de devis pour une agence web"
+              className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={
+                data?.status === "PUBLISHED" || generateFields.isPending
+              }
+            />
+            {generateErrorMessage ? (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {generateErrorMessage}
+              </div>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAiDialogOpen(false)}
+              disabled={generateFields.isPending}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                const trimmed = prompt.trim();
+                if (!trimmed) return;
+                generateFields.mutate(
+                  { prompt: trimmed },
+                  {
+                    onSuccess: () => {
+                      setPrompt("");
+                      setIsAiDialogOpen(false);
+                    },
+                  },
+                );
+              }}
+              disabled={
+                data?.status === "PUBLISHED" ||
+                generateFields.isPending ||
+                !prompt.trim()
+              }
+            >
+              {generateFields.isPending ? "Generation..." : "Generer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

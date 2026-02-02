@@ -33,6 +33,7 @@ type FieldsManagerProps = {
   formId: string;
   onPreviewChange?: (draft: PreviewDraft | null) => void;
   isReadOnly?: boolean;
+  onGenerateClick?: () => void;
 };
 
 export type PreviewDraft = {
@@ -45,6 +46,7 @@ export function FieldsManager({
   formId,
   onPreviewChange,
   isReadOnly = false,
+  onGenerateClick,
 }: FieldsManagerProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
@@ -159,10 +161,22 @@ export function FieldsManager({
           ) : null}
         </div>
         {!isReadOnly && !isAdding && !editingField && (
-          <Button onClick={handleStartCreate} size="sm">
-            <Plus className="h-4 w-4 mr-1" />
-            Ajouter
-          </Button>
+          <div className="flex items-center gap-1.5">
+            {onGenerateClick && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onGenerateClick}
+              >
+                Generer
+              </Button>
+            )}
+            <Button onClick={handleStartCreate} size="sm">
+              <Plus className="h-4 w-4 mr-1" />
+              Ajouter
+            </Button>
+          </div>
         )}
       </div>
 

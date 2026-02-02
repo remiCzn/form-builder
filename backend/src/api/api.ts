@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { FieldsService } from "../services/fields.js";
 import { FormsService } from "../services/forms.js";
+import { FormsAiService } from "../services/formsAi.js";
 import {
   CreateField,
   Field,
@@ -8,7 +9,13 @@ import {
   ReorderFields,
   UpdateField,
 } from "../types/fields.js";
-import { CreateForm, Form, FormId, UpdateForm } from "../types/forms.js";
+import {
+  CreateForm,
+  Form,
+  FormId,
+  GenerateFormBody,
+  UpdateForm,
+} from "../types/forms.js";
 
 export const api = new Elysia({ prefix: "/api" })
   .get(
@@ -28,6 +35,17 @@ export const api = new Elysia({ prefix: "/api" })
     },
     {
       body: CreateForm,
+    },
+  )
+  .post(
+    "/forms/:id/generate",
+    ({ params, body }) => {
+      return FormsAiService.generateFormFields(params.id, body.prompt);
+    },
+    {
+      params: FormId,
+      body: GenerateFormBody,
+      response: t.Array(Field),
     },
   )
   .get(

@@ -10,7 +10,9 @@ import {
   type UpdateField,
   type FieldType,
 } from "../../../backend/src/types/fields";
+import { type GenerateFormBody } from "../../../backend/src/types/forms";
 import { AxiosError } from "axios";
+import { formKeys } from "@/services/forms";
 
 export type { Field, CreateField, UpdateField, FieldType };
 
@@ -52,6 +54,11 @@ const reorderFields = async (formId: string, fieldOrder: string[]) => {
   const res = await client.put<Field[]>(`/forms/${formId}/fields/reorder`, {
     fieldOrder,
   });
+  return res.data;
+};
+
+const generateFields = async (formId: string, payload: GenerateFormBody) => {
+  const res = await client.post<Field[]>(`/forms/${formId}/generate`, payload);
   return res.data;
 };
 
@@ -102,6 +109,19 @@ export const useReorderFields = (formId: string) => {
     mutationFn: (fieldOrder) => reorderFields(formId, fieldOrder),
     onSuccess: (fields) => {
       queryClient.setQueryData(fieldKeys.list(formId), fields);
+    },
+  });
+};
+
+export const useGenerateFields = (formId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Field[], AxiosError, GenerateFormBody>({
+    mutationFn: (payload) => generateFields(formId, payload),
+    onSuccess: (fields) => {
+      queryClient.setQueryData(fieldKeys.list(formId), fields);
+      queryClient.invalidateQueries({ queryKey: formKeys.detail(formId) });
+      queryClient.invalidateQueries({ queryKey: formKeys.list() });
     },
   });
 };
