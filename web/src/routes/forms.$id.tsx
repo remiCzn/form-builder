@@ -81,7 +81,7 @@ function RouteComponent() {
       title={data?.name ?? "Formulaire"}
       description="Consultez les informations et modifiez les champs."
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Button
             type="button"
             variant="outline"
@@ -116,31 +116,31 @@ function RouteComponent() {
       }
     >
       {isPending ? (
-        <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
           Chargement du formulaire...
         </div>
       ) : null}
 
       {isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           {errorMessage}
         </div>
       ) : null}
 
       {data ? (
         <div
-          className={cn("grid gap-8", isPreviewOpen ? "lg:grid-cols-2" : "")}
+          className={cn("grid gap-5", isPreviewOpen ? "lg:grid-cols-2" : "")}
         >
-          <div className="space-y-8">
-            <div className="rounded-xl border bg-card p-6 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-1">
+          <div className="space-y-6">
+            <div className="rounded-xl border bg-card p-4 shadow-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-0.5">
                   <p className="text-sm text-muted-foreground">Identifiant</p>
                   <p className="font-mono text-sm">{data.id}</p>
                 </div>
                 <StatusBadge status={data.status} />
               </div>
-              <div className="mt-6 grid gap-4 text-sm sm:grid-cols-3">
+              <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                 {[
                   {
                     label: "Cree le",
@@ -162,24 +162,18 @@ function RouteComponent() {
                 ))}
               </div>
               {data.status === "PUBLISHED" ? (
-                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                  Ce formulaire est publie. Les modifications sont desactivees.
+                <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                  Ce formulaire est publie. Les modifications sont desactivées.
                 </div>
               ) : null}
               {publishErrorMessage ? (
-                <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                   {publishErrorMessage}
                 </div>
               ) : null}
             </div>
 
-            <FieldsManager
-              formId={id}
-              onPreviewChange={setPreviewDraft}
-              isReadOnly={data.status === "PUBLISHED"}
-            />
-
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div>
                 <h2 className="text-lg font-semibold">
                   Modifier le formulaire
@@ -204,10 +198,16 @@ function RouteComponent() {
                 }
               />
             </div>
+
+            <FieldsManager
+              formId={id}
+              onPreviewChange={setPreviewDraft}
+              isReadOnly={data.status === "PUBLISHED"}
+            />
           </div>
 
           {isPreviewOpen ? (
-            <div className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border/60 lg:pl-6">
+            <div className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border/60 lg:pl-4">
               <FormPreview
                 title={data.name}
                 fields={previewFields}

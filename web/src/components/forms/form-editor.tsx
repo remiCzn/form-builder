@@ -84,12 +84,12 @@ export function FormEditor({
 
   return (
     <form
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-3"
       onSubmit={handleSubmit((values) => onSubmit(values))}
     >
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <div className="grid gap-6">
-          <div className="grid gap-2">
+      <div className="rounded-xl border bg-card p-4 shadow-sm">
+        <div className="grid gap-3">
+          <div className="grid gap-1.5">
             <Label htmlFor="form-name">Nom</Label>
             <Input
               id="form-name"
@@ -103,7 +103,7 @@ export function FormEditor({
               <p className="text-xs text-destructive">{errors.name.message}</p>
             )}
           </div>
-          <div className="grid gap-2">
+          <div className="grid gap-1.5">
             <Label htmlFor="form-slug">Slug</Label>
             <Input
               id="form-slug"
@@ -123,12 +123,12 @@ export function FormEditor({
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
         {cancelTo ? (
           <Link
             to={cancelTo}

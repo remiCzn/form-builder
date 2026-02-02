@@ -47,7 +47,7 @@ export function SortableFieldItem({
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-lg border bg-card p-3 shadow-sm ${
+      className={`flex items-center gap-2 rounded-lg border bg-card p-2 shadow-sm ${
         isDragging ? "opacity-50 shadow-lg" : ""
       }`}
     >
@@ -63,13 +63,13 @@ export function SortableFieldItem({
       </button>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <span className="font-medium truncate">{field.label}</span>
           {field.required && (
             <span className="text-xs text-destructive">*</span>
           )}
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span>{FIELD_TYPE_LABELS[field.type]}</span>
           {field.type === "DROPDOWN" &&
             field.config &&

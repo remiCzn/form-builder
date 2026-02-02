@@ -47,7 +47,7 @@ function SortableOption({ id, value, onRemove, onChange }: SortableOptionProps) 
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-2 ${isDragging ? "opacity-50" : ""}`}
+      className={`flex items-center gap-1.5 ${isDragging ? "opacity-50" : ""}`}
     >
       <button
         type="button"
@@ -135,7 +135,7 @@ export function DropdownOptionsEditor({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <Label>Options de la liste</Label>
 
       {value.length > 0 ? (
@@ -148,7 +148,7 @@ export function DropdownOptionsEditor({
             items={optionsWithIds.map((o) => o.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {optionsWithIds.map((option, index) => (
                 <SortableOption
                   key={option.id}
@@ -165,7 +165,7 @@ export function DropdownOptionsEditor({
         <p className="text-sm text-muted-foreground">Aucune option ajoutée.</p>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <Input
           value={newOption}
           onChange={(e) => setNewOption(e.target.value)}

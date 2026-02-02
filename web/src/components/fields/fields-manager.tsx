@@ -114,7 +114,7 @@ export function FieldsManager({
 
   if (isPending) {
     return (
-      <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+      <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
         Chargement des champs...
       </div>
     );
@@ -122,7 +122,7 @@ export function FieldsManager({
 
   if (isError) {
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
+      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
         {getErrorMessage(error)}
       </div>
     );
@@ -143,7 +143,7 @@ export function FieldsManager({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Champs du formulaire</h2>
@@ -154,7 +154,7 @@ export function FieldsManager({
           </p>
           {isReadOnly ? (
             <p className="text-xs text-muted-foreground">
-              Formulaire publie. Les modifications sont desactivees.
+              Formulaire publie. Les modifications sont desactivées.
             </p>
           ) : null}
         </div>
@@ -167,8 +167,8 @@ export function FieldsManager({
       </div>
 
       {!isReadOnly && isAdding && (
-        <div className="rounded-xl border bg-card p-4">
-          <h3 className="font-medium mb-3">Nouveau champ</h3>
+        <div className="rounded-xl border bg-card p-3">
+          <h3 className="font-medium mb-2">Nouveau champ</h3>
           <FieldForm
             onSubmit={handleCreate}
             onChange={(values) =>
@@ -182,7 +182,7 @@ export function FieldsManager({
             submitLabel="Ajouter"
           />
           {createField.isError && (
-            <p className="mt-2 text-sm text-destructive">
+            <p className="mt-1.5 text-sm text-destructive">
               {getErrorMessage(createField.error)}
             </p>
           )}
@@ -190,8 +190,8 @@ export function FieldsManager({
       )}
 
       {!isReadOnly && editingField && (
-        <div className="rounded-xl border bg-card p-4">
-          <h3 className="font-medium mb-3">Modifier le champ</h3>
+        <div className="rounded-xl border bg-card p-3">
+          <h3 className="font-medium mb-2">Modifier le champ</h3>
           <FieldForm
             defaultValues={fieldToFormValues(editingField)}
             onSubmit={handleUpdate}
@@ -211,7 +211,7 @@ export function FieldsManager({
             submitLabel="Enregistrer"
           />
           {updateField.isError && (
-            <p className="mt-2 text-sm text-destructive">
+            <p className="mt-1.5 text-sm text-destructive">
               {getErrorMessage(updateField.error)}
             </p>
           )}
@@ -228,7 +228,7 @@ export function FieldsManager({
             items={fields.map((f) => f.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {fields.map((field) => (
                 <SortableFieldItem
                   key={field.id}
@@ -243,12 +243,12 @@ export function FieldsManager({
         </DndContext>
       ) : (
         !isAdding && (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center">
+          <div className="rounded-xl border border-dashed bg-muted/30 p-4 text-center">
             <p className="text-muted-foreground">Aucun champ pour le moment.</p>
             {!isReadOnly ? (
               <Button
                 variant="outline"
-                className="mt-3"
+                className="mt-2"
                 onClick={handleStartCreate}
               >
                 <Plus className="h-4 w-4 mr-1" />

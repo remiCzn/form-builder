@@ -100,9 +100,9 @@ export function FieldForm({
     fieldType === "DROPDOWN" && dropdownOptions.some((o) => !o.trim());
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
           <Label htmlFor="label">Libelle</Label>
           <Input
             id="label"
@@ -114,7 +114,7 @@ export function FieldForm({
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="type">Type</Label>
           <Select id="type" {...register("type")}>
             {FIELD_TYPES.map((type) => (
@@ -133,7 +133,7 @@ export function FieldForm({
         />
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <input
           type="checkbox"
           id="required"
@@ -145,7 +145,7 @@ export function FieldForm({
         </Label>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-1.5">
         <Button type="submit" disabled={isSubmitting || hasEmptyOptions}>
           {isSubmitting ? "Enregistrement..." : submitLabel}
         </Button>
