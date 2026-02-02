@@ -1,0 +1,22 @@
+{
+	"name": "monorepo",
+	"version": "0.0.1",
+	"license": "UNLICENSED",
+	"private": true,
+	"scripts": {
+		"lint": "biome check . --write",
+		"dev:backend": "NODE_ENV=development yarn workspace backend dev",
+		"dev:web": "NODE_ENV=development yarn workspace web dev",
+		"build:backend": "yarn workspace backend build && sh backend/build.sh",
+		"build:web": "yarn workspace web build"
+	},
+	"workspaces": [
+		"backend",
+		"web"
+	],
+	"packageManager": "yarn@1.22.22",
+	"volta": {
+		"node": "24.9.0",
+		"yarn": "1.22.22"
+	}
+}

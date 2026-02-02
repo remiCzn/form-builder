@@ -1,0 +1,10 @@
+node_modules/
+
+backend/generated/
+backend/dist/
+build/
+
+.yarn
+
+.DS_Store
+.claude

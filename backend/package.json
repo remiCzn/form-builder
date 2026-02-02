@@ -1,0 +1,32 @@
+{
+	"name": "backend",
+	"version": "0.0.1",
+	"license": "UNLICENSED",
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"build": "tsc",
+		"start": "node dist/index.js"
+	},
+	"dependencies": {
+		"@elysiajs/node": "^1.4.3",
+		"@libsql/client": "^0.17.0",
+		"@sinclair/typebox": "^0.34.48",
+		"dotenv": "^17.2.3",
+		"drizzle-orm": "^0.45.1",
+		"elysia": "^1.4.22",
+		"openai": "^6.17.0",
+		"zod": "^4.3.6"
+	},
+	"devDependencies": {
+		"@types/node": "^25.1.0",
+		"drizzle-kit": "^0.31.8",
+		"tsx": "^4.21.0",
+		"typescript": "^5.9.3"
+	},
+	"packageManager": "yarn@1.22.22",
+	"volta": {
+		"node": "24.9.0",
+		"yarn": "1.22.22"
+	}
+}

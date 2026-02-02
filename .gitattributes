@@ -1,0 +1,2 @@
+backend/.env.prod filter=crypt diff=crypt merge=crypt
+backend/.env filter=crypt diff=crypt merge=crypt

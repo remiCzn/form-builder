@@ -1,0 +1,9 @@
+{
+	"apps": [
+		{
+			"name": "form-builder",
+			"script": "dist/src/index.js",
+			"cwd": "/root/apps/form-builder"
+		}
+	]
+}
