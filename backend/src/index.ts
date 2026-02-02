@@ -6,7 +6,7 @@ import { Elysia } from "elysia";
 
 const app = new Elysia({ adapter: node() })
   .use(api)
-  .listen(env.PORT, ({ hostname, port }) => {
+  .listen(3456, ({ hostname, port }) => {
     console.log(`Server is running on http://${hostname}:${port}`);
   });
 

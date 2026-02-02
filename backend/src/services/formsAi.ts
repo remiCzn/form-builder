@@ -1,5 +1,5 @@
 import { status } from "elysia";
-import { eq } from "drizzle-orm";
+import { and, eq, like, ne } from "drizzle-orm";
 import openAi from "../lib/openai.js";
 import db from "../lib/db.js";
 import { fieldsTable, formsTable } from "../db/schema.js";
@@ -54,6 +54,39 @@ const SYSTEM_PROMPT = [
   "Si le champ est DROPDOWN, mets 2 a 6 options courtes.",
 ].join(" ");
 
+const normalizeValue = (value?: string) => value?.trim() ?? "";
+
+const getFallbackSlug = () =>
+  `formulaire-${crypto.randomUUID().slice(0, 8)}`;
+
+const getAvailableSlug = async (baseSlug: string, formId: string) => {
+  const normalized = normalizeValue(baseSlug);
+  const candidate = normalized || getFallbackSlug();
+
+  const existing = await db
+    .select({ slug: formsTable.slug })
+    .from(formsTable)
+    .where(
+      and(
+        like(formsTable.slug, `${candidate}%`),
+        ne(formsTable.id, formId),
+      ),
+    );
+
+  const used = new Set(existing.map((row) => row.slug));
+
+  if (!used.has(candidate)) {
+    return candidate;
+  }
+
+  let suffix = 2;
+  while (used.has(`${candidate}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${candidate}-${suffix}`;
+};
+
 export class FormsAiService {
   static async generateFormFields(formId: string, prompt: string) {
     const cleanedPrompt = prompt.trim();
@@ -63,7 +96,12 @@ export class FormsAiService {
     }
 
     const [form] = await db
-      .select({ id: formsTable.id, status: formsTable.status })
+      .select({
+        id: formsTable.id,
+        status: formsTable.status,
+        name: formsTable.name,
+        slug: formsTable.slug,
+      })
       .from(formsTable)
       .where(eq(formsTable.id, formId))
       .limit(1);
@@ -75,6 +113,19 @@ export class FormsAiService {
     if (form.status === "PUBLISHED") {
       throw status(409, "Formulaire deja publie");
     }
+
+    const existingFields = await db
+      .select({
+        id: fieldsTable.id,
+        label: fieldsTable.label,
+        type: fieldsTable.type,
+        required: fieldsTable.required,
+        order: fieldsTable.order,
+        config: fieldsTable.config,
+      })
+      .from(fieldsTable)
+      .where(eq(fieldsTable.formId, formId))
+      .orderBy(fieldsTable.order);
 
     const completion = await openAi.chat.completions
       .create({
@@ -88,7 +139,17 @@ export class FormsAiService {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Brief: ${cleanedPrompt}`,
+            content: [
+              "Formulaire actuel:",
+              `Nom: ${form.name}`,
+              `Slug: ${form.slug}`,
+              "Champs:",
+              existingFields.length
+                ? JSON.stringify(existingFields)
+                : "Aucun champ",
+              "",
+              `Brief: ${cleanedPrompt}`,
+            ].join("\n"),
           },
         ],
       })
@@ -116,6 +177,12 @@ export class FormsAiService {
     if (rawFields.length === 0) {
       throw status(502, "Aucun champ genere.");
     }
+
+    const nextName = normalizeValue(parsed.name) || form.name;
+    const nextSlug = await getAvailableSlug(
+      normalizeValue(parsed.slug) || form.slug,
+      formId,
+    );
 
     const fieldsToInsert = rawFields.map((field, index) => {
       const label = (field.label ?? "").trim() || `Champ ${index + 1}`;
@@ -149,7 +216,11 @@ export class FormsAiService {
       await tx.delete(fieldsTable).where(eq(fieldsTable.formId, formId));
       await tx
         .update(formsTable)
-        .set({ updatedAt: new Date(now) })
+        .set({
+          name: nextName,
+          slug: nextSlug,
+          updatedAt: new Date(now),
+        })
         .where(eq(formsTable.id, formId));
 
       const inserted = await tx

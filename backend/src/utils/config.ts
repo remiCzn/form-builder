@@ -3,7 +3,6 @@ import z from "zod";
 const envSchema = z.object({
   DB_FILENAME: z.string(),
   OPENAI_API_KEY: z.string(),
-  PORT: z.coerce.number(),
 });
 
 const envParsed = envSchema.safeParse(process.env);
