@@ -14,6 +14,11 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      external: ["file-type"],
+    },
+  },
   resolve: {
     preserveSymlinks: true,
     alias: {
