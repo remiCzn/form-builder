@@ -6,4 +6,4 @@ cp backend/package.json ./build/package.json
 cp yarn.lock ./build/yarn.lock
 cp backend/pm2.json ./build/pm2.json
 
-mv web/dist ./build/dist/public
+mv web/dist ./build/dist/dist
