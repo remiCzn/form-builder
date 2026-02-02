@@ -3,7 +3,6 @@ mkdir -p ./build
 
 mv backend/dist ./build/dist
 cp backend/package.json ./build/package.json
-cp backend/.env.prod ./build/.env
 cp yarn.lock ./build/yarn.lock
 cp backend/pm2.json ./build/pm2.json
 
