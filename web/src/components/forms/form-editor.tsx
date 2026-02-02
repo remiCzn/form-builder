@@ -20,6 +20,7 @@ type FormEditorProps = {
   error?: string | null;
   cancelTo?: "/" | "/forms/new";
   autoSlug?: boolean;
+  isReadOnly?: boolean;
 };
 
 const slugify = (value: string) =>
@@ -37,6 +38,7 @@ export function FormEditor({
   error,
   cancelTo,
   autoSlug = false,
+  isReadOnly = false,
 }: FormEditorProps) {
   const [slugTouched, setSlugTouched] = useState(Boolean(defaultValues?.slug));
 
@@ -92,6 +94,7 @@ export function FormEditor({
             <Input
               id="form-name"
               placeholder="Ex: Formulaire d'inscription"
+              disabled={isReadOnly}
               {...register("name", {
                 required: "Le nom est requis.",
               })}
@@ -105,6 +108,7 @@ export function FormEditor({
             <Input
               id="form-slug"
               placeholder="ex: formulaire-inscription"
+              disabled={isReadOnly}
               {...slugField}
             />
             <p className="text-xs text-muted-foreground">
@@ -133,7 +137,7 @@ export function FormEditor({
             Annuler
           </Link>
         ) : null}
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || isReadOnly}>
           {isSubmitting ? "En cours..." : submitLabel}
         </Button>
       </div>

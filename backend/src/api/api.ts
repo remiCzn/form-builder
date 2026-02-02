@@ -11,7 +11,6 @@ import {
 import { CreateForm, Form, FormId, UpdateForm } from "../types/forms.js";
 
 export const api = new Elysia({ prefix: "/api" })
-  .get("/", () => "Hello World")
   .get(
     "/forms",
     async () => {
@@ -48,6 +47,16 @@ export const api = new Elysia({ prefix: "/api" })
     {
       params: FormId,
       body: UpdateForm,
+    },
+  )
+  .post(
+    "/forms/:id/publish",
+    ({ params }) => {
+      return FormsService.publishForm(params.id);
+    },
+    {
+      params: FormId,
+      response: Form,
     },
   )
   // Fields endpoints

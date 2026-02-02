@@ -20,12 +20,14 @@ type SortableFieldItemProps = {
   field: Field;
   onEdit: (field: Field) => void;
   onDelete: (fieldId: string) => void;
+  isReadOnly?: boolean;
 };
 
 export function SortableFieldItem({
   field,
   onEdit,
   onDelete,
+  isReadOnly = false,
 }: SortableFieldItemProps) {
   const {
     attributes,
@@ -34,7 +36,7 @@ export function SortableFieldItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field.id });
+  } = useSortable({ id: field.id, disabled: isReadOnly });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -51,7 +53,9 @@ export function SortableFieldItem({
     >
       <button
         type="button"
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+        className={`cursor-grab touch-none text-muted-foreground hover:text-foreground ${
+          isReadOnly ? "pointer-events-none opacity-50" : ""
+        }`}
         {...attributes}
         {...listeners}
       >
@@ -80,6 +84,7 @@ export function SortableFieldItem({
           type="button"
           variant="ghost"
           size="icon-sm"
+          disabled={isReadOnly}
           onClick={() => onEdit(field)}
         >
           <Pencil className="h-4 w-4" />
@@ -88,6 +93,7 @@ export function SortableFieldItem({
           type="button"
           variant="ghost"
           size="icon-sm"
+          disabled={isReadOnly}
           onClick={() => onDelete(field.id)}
         >
           <Trash2 className="h-4 w-4 text-destructive" />

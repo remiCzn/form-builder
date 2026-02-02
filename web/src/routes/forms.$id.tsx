@@ -1,13 +1,20 @@
+import { useMemo, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { FieldsManager } from "@/components/fields/fields-manager";
+import {
+  FieldsManager,
+  type PreviewDraft,
+} from "@/components/fields/fields-manager";
 import { FormEditor } from "@/components/forms/form-editor";
+import { FormPreview, type PreviewField } from "@/components/forms/formPreview";
 import { StatusBadge } from "@/components/forms/status-badge";
 import { PageShell } from "@/components/layout/page-shell";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDateTime } from "@/lib/format";
-import { useForm, useUpdateForm } from "@/services/forms";
+import { cn } from "@/lib/utils";
+import { useFields } from "@/services/fields";
+import { useForm, usePublishForm, useUpdateForm } from "@/services/forms";
 
 export const Route = createFileRoute("/forms/$id")({
   component: RouteComponent,
@@ -16,25 +23,96 @@ export const Route = createFileRoute("/forms/$id")({
 function RouteComponent() {
   const { id } = Route.useParams();
   const { data, isPending, isError, error } = useForm(id);
+  const {
+    data: fields,
+    isPending: fieldsPending,
+    isError: fieldsError,
+    error: fieldsErrorResponse,
+  } = useFields(id);
   const navigate = useNavigate();
   const updateForm = useUpdateForm(id);
+  const publishForm = usePublishForm(id);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(true);
+  const [previewDraft, setPreviewDraft] = useState<PreviewDraft | null>(null);
 
   const errorMessage = isError ? getErrorMessage(error) : null;
   const updateErrorMessage = updateForm.isError
     ? getErrorMessage(updateForm.error)
     : null;
+  const publishErrorMessage = publishForm.isError
+    ? getErrorMessage(publishForm.error)
+    : null;
+  const fieldsErrorMessage = fieldsError
+    ? getErrorMessage(fieldsErrorResponse)
+    : null;
+
+  const previewFields = useMemo<PreviewField[]>(() => {
+    const baseFields =
+      fields?.map((field) => ({
+        id: field.id,
+        label: field.label,
+        type: field.type,
+        required: field.required,
+        config: field.config,
+      })) ?? [];
+
+    if (!previewDraft) return baseFields;
+
+    const draftField: PreviewField = {
+      id: previewDraft.fieldId ?? "draft-field",
+      label: previewDraft.field.label ?? "",
+      type: previewDraft.field.type,
+      required: Boolean(previewDraft.field.required),
+      config: previewDraft.field.config ?? null,
+      isDraft: true,
+    };
+
+    if (previewDraft.mode === "create") {
+      return [...baseFields, { ...draftField, id: "draft-field" }];
+    }
+
+    return baseFields.map((field) =>
+      field.id === previewDraft.fieldId ? { ...field, ...draftField } : field,
+    );
+  }, [fields, previewDraft]);
 
   return (
     <PageShell
       title={data?.name ?? "Formulaire"}
       description="Consultez les informations et modifiez les champs."
       actions={
-        <Link
-          to="/"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          Retour
-        </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPreviewOpen((current) => !current)}
+          >
+            {isPreviewOpen ? "Masquer l'apercu" : "Afficher l'apercu"}
+          </Button>
+          {data?.status === "DRAFT" ? (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                if (
+                  confirm("Publier ce formulaire ? Il ne sera plus modifiable.")
+                ) {
+                  publishForm.mutate(void 0);
+                }
+              }}
+              disabled={publishForm.isPending}
+            >
+              {publishForm.isPending ? "Publication..." : "Publier"}
+            </Button>
+          ) : null}
+          <Link
+            to="/"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Retour
+          </Link>
+        </div>
       }
     >
       {isPending ? (
@@ -50,62 +128,94 @@ function RouteComponent() {
       ) : null}
 
       {data ? (
-        <div className="grid gap-8">
-          <div className="rounded-xl border bg-card p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Identifiant</p>
-                <p className="font-mono text-sm">{data.id}</p>
-              </div>
-              <StatusBadge status={data.status} />
-            </div>
-            <div className="mt-6 grid gap-4 text-sm sm:grid-cols-3">
-              {[
-                {
-                  label: "Cree le",
-                  value: formatDateTime(data.createdAt),
-                },
-                {
-                  label: "Derniere mise a jour",
-                  value: formatDateTime(data.updatedAt),
-                },
-                {
-                  label: "Publication",
-                  value: formatDateTime(data.publishedAt),
-                },
-              ].map((item) => (
-                <div key={item.label}>
-                  <p className="text-muted-foreground">{item.label}</p>
-                  <p className="font-medium text-foreground">{item.value}</p>
+        <div
+          className={cn("grid gap-8", isPreviewOpen ? "lg:grid-cols-2" : "")}
+        >
+          <div className="space-y-8">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Identifiant</p>
+                  <p className="font-mono text-sm">{data.id}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <FieldsManager formId={id} />
-
-          <div className="space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold">Modifier le formulaire</h2>
-              <p className="text-sm text-muted-foreground">
-                Changez le nom ou le slug.
-              </p>
-            </div>
-            <FormEditor
-              defaultValues={{ name: data.name, slug: data.slug }}
-              submitLabel="Enregistrer"
-              cancelTo="/"
-              isSubmitting={updateForm.isPending}
-              error={updateErrorMessage}
-              onSubmit={(values) =>
-                updateForm.mutate(values, {
-                  onSuccess: () => {
-                    navigate({ to: "/" });
+                <StatusBadge status={data.status} />
+              </div>
+              <div className="mt-6 grid gap-4 text-sm sm:grid-cols-3">
+                {[
+                  {
+                    label: "Cree le",
+                    value: formatDateTime(data.createdAt),
                   },
-                })
-              }
+                  {
+                    label: "Derniere mise a jour",
+                    value: formatDateTime(data.updatedAt),
+                  },
+                  {
+                    label: "Publication",
+                    value: formatDateTime(data.publishedAt),
+                  },
+                ].map((item) => (
+                  <div key={item.label}>
+                    <p className="text-muted-foreground">{item.label}</p>
+                    <p className="font-medium text-foreground">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              {data.status === "PUBLISHED" ? (
+                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                  Ce formulaire est publie. Les modifications sont desactivees.
+                </div>
+              ) : null}
+              {publishErrorMessage ? (
+                <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                  {publishErrorMessage}
+                </div>
+              ) : null}
+            </div>
+
+            <FieldsManager
+              formId={id}
+              onPreviewChange={setPreviewDraft}
+              isReadOnly={data.status === "PUBLISHED"}
             />
+
+            <div className="space-y-3">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  Modifier le formulaire
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Changez le nom ou le slug.
+                </p>
+              </div>
+              <FormEditor
+                defaultValues={{ name: data.name, slug: data.slug }}
+                submitLabel="Enregistrer"
+                cancelTo="/"
+                isSubmitting={updateForm.isPending}
+                error={updateErrorMessage}
+                isReadOnly={data.status === "PUBLISHED"}
+                onSubmit={(values) =>
+                  updateForm.mutate(values, {
+                    onSuccess: () => {
+                      navigate({ to: "/" });
+                    },
+                  })
+                }
+              />
+            </div>
           </div>
+
+          {isPreviewOpen ? (
+            <div className="lg:sticky lg:top-24 lg:self-start lg:border-l lg:border-border/60 lg:pl-6">
+              <FormPreview
+                title={data.name}
+                fields={previewFields}
+                isLoading={fieldsPending}
+                errorMessage={fieldsErrorMessage}
+              />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </PageShell>

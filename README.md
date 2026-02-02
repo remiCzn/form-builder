@@ -29,6 +29,16 @@ yarn install
 
 ### Mode développement
 
+- Ajouter un .env dans backend, en suivant l'exemple de [.env.example](backend/.env.example)
+- Créer la structure de la base de données:
+
+```
+cd backend
+yarn drizzle-kit push
+```
+
+- Lancer le projet
+
 ```bash
 yarn dev:backend
 yarn dev:web

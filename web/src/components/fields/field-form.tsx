@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ type FieldFormValues = {
 type FieldFormProps = {
   defaultValues?: Partial<FieldFormValues & { dropdownOptions: string[] }>;
   onSubmit: (values: CreateField) => void;
+  onChange?: (values: CreateField) => void;
   onCancel?: () => void;
   isSubmitting?: boolean;
   submitLabel?: string;
@@ -29,6 +31,7 @@ const FIELD_TYPES: { value: FieldType; label: string }[] = [
 export function FieldForm({
   defaultValues,
   onSubmit,
+  onChange,
   onCancel,
   isSubmitting,
   submitLabel = "Ajouter",
@@ -48,10 +51,36 @@ export function FieldForm({
     },
   });
 
-  const fieldType = watch("type");
+  const watchedLabel = watch("label");
+  const watchedType = watch("type");
+  const watchedRequired = watch("required");
   const dropdownOptions = watch("dropdownOptions");
+  const lastPreviewKey = useRef<string | null>(null);
 
-  const onFormSubmit = (values: FieldFormValues & { dropdownOptions: string[] }) => {
+  useEffect(() => {
+    if (!onChange) return;
+    const previewKey = `${watchedLabel}||${watchedType}||${watchedRequired}||${dropdownOptions.join("::")}`;
+    if (lastPreviewKey.current === previewKey) return;
+    lastPreviewKey.current = previewKey;
+    const validOptions = dropdownOptions.filter((o) => o.trim());
+    const config: Record<string, unknown> | undefined =
+      watchedType === "DROPDOWN" && validOptions.length > 0
+        ? { options: validOptions }
+        : undefined;
+
+    onChange({
+      label: watchedLabel,
+      type: watchedType,
+      required: watchedRequired,
+      config,
+    });
+  }, [dropdownOptions, onChange, watchedLabel, watchedRequired, watchedType]);
+
+  const fieldType = watchedType;
+
+  const onFormSubmit = (
+    values: FieldFormValues & { dropdownOptions: string[] },
+  ) => {
     const validOptions = values.dropdownOptions.filter((o) => o.trim());
 
     const config: Record<string, unknown> | undefined =

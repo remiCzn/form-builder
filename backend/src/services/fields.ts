@@ -16,7 +16,7 @@ export class FieldsService {
   }
 
   static async createField(formId: string, field: CreateField) {
-    await this.ensureFormExists(formId);
+    await this.ensureFormEditable(formId);
 
     const id = crypto.randomUUID();
 
@@ -48,7 +48,7 @@ export class FieldsService {
     fieldId: string,
     field: UpdateField,
   ) {
-    await this.ensureFormExists(formId);
+    await this.ensureFormEditable(formId);
 
     const now = Date.now();
 
@@ -66,7 +66,7 @@ export class FieldsService {
   }
 
   static async deleteField(formId: string, fieldId: string) {
-    await this.ensureFormExists(formId);
+    await this.ensureFormEditable(formId);
 
     const [deleted] = await db
       .delete(fieldsTable)
@@ -78,7 +78,7 @@ export class FieldsService {
   }
 
   static async reorderFields(formId: string, fieldOrder: string[]) {
-    await this.ensureFormExists(formId);
+    await this.ensureFormEditable(formId);
 
     const now = Date.now();
 
@@ -110,6 +110,20 @@ export class FieldsService {
       .limit(1);
 
     if (!form) throw status(404, "Form not found");
+    return form;
+  }
+
+  private static async ensureFormEditable(formId: string) {
+    const [form] = await db
+      .select({ id: formsTable.id, status: formsTable.status })
+      .from(formsTable)
+      .where(eq(formsTable.id, formId))
+      .limit(1);
+
+    if (!form) throw status(404, "Form not found");
+    if (form.status === "PUBLISHED") {
+      throw status(409, "Formulaire deja publie");
+    }
     return form;
   }
 }

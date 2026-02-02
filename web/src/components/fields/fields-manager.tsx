@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -31,9 +31,21 @@ import { getErrorMessage } from "@/lib/errors";
 
 type FieldsManagerProps = {
   formId: string;
+  onPreviewChange?: (draft: PreviewDraft | null) => void;
+  isReadOnly?: boolean;
 };
 
-export function FieldsManager({ formId }: FieldsManagerProps) {
+export type PreviewDraft = {
+  mode: "create" | "edit";
+  fieldId?: string;
+  field: CreateField;
+};
+
+export function FieldsManager({
+  formId,
+  onPreviewChange,
+  isReadOnly = false,
+}: FieldsManagerProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
 
@@ -50,7 +62,15 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
     }),
   );
 
+  useEffect(() => {
+    if (!isReadOnly) return;
+    setIsAdding(false);
+    setEditingField(null);
+    onPreviewChange?.(null);
+  }, [isReadOnly, onPreviewChange]);
+
   const handleDragEnd = (event: DragEndEvent) => {
+    if (isReadOnly) return;
     const { active, over } = event;
 
     if (over && active.id !== over.id && fields) {
@@ -62,20 +82,31 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
   };
 
   const handleCreate = (values: CreateField) => {
+    if (isReadOnly) return;
     createField.mutate(values, {
-      onSuccess: () => setIsAdding(false),
+      onSuccess: () => {
+        setIsAdding(false);
+        onPreviewChange?.(null);
+      },
     });
   };
 
   const handleUpdate = (values: CreateField) => {
+    if (isReadOnly) return;
     if (!editingField) return;
     updateField.mutate(
       { fieldId: editingField.id, payload: values },
-      { onSuccess: () => setEditingField(null) },
+      {
+        onSuccess: () => {
+          setEditingField(null);
+          onPreviewChange?.(null);
+        },
+      },
     );
   };
 
   const handleDelete = (fieldId: string) => {
+    if (isReadOnly) return;
     if (confirm("Supprimer ce champ ?")) {
       deleteField.mutate(fieldId);
     }
@@ -97,29 +128,56 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
     );
   }
 
+  const handleStartCreate = () => {
+    if (isReadOnly) return;
+    setEditingField(null);
+    setIsAdding(true);
+    onPreviewChange?.(null);
+  };
+
+  const handleStartEdit = (field: Field) => {
+    if (isReadOnly) return;
+    setIsAdding(false);
+    setEditingField(field);
+    onPreviewChange?.(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Champs du formulaire</h2>
           <p className="text-sm text-muted-foreground">
-            Glissez-deposez pour reordonner les champs.
+            {isReadOnly
+              ? "Consultez les champs du formulaire."
+              : "Glissez-deposez pour reordonner les champs."}
           </p>
+          {isReadOnly ? (
+            <p className="text-xs text-muted-foreground">
+              Formulaire publie. Les modifications sont desactivees.
+            </p>
+          ) : null}
         </div>
-        {!isAdding && !editingField && (
-          <Button onClick={() => setIsAdding(true)} size="sm">
+        {!isReadOnly && !isAdding && !editingField && (
+          <Button onClick={handleStartCreate} size="sm">
             <Plus className="h-4 w-4 mr-1" />
             Ajouter
           </Button>
         )}
       </div>
 
-      {isAdding && (
+      {!isReadOnly && isAdding && (
         <div className="rounded-xl border bg-card p-4">
           <h3 className="font-medium mb-3">Nouveau champ</h3>
           <FieldForm
             onSubmit={handleCreate}
-            onCancel={() => setIsAdding(false)}
+            onChange={(values) =>
+              onPreviewChange?.({ mode: "create", field: values })
+            }
+            onCancel={() => {
+              setIsAdding(false);
+              onPreviewChange?.(null);
+            }}
             isSubmitting={createField.isPending}
             submitLabel="Ajouter"
           />
@@ -131,13 +189,24 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
         </div>
       )}
 
-      {editingField && (
+      {!isReadOnly && editingField && (
         <div className="rounded-xl border bg-card p-4">
           <h3 className="font-medium mb-3">Modifier le champ</h3>
           <FieldForm
             defaultValues={fieldToFormValues(editingField)}
             onSubmit={handleUpdate}
-            onCancel={() => setEditingField(null)}
+            onChange={(values) => {
+              if (!editingField) return;
+              onPreviewChange?.({
+                mode: "edit",
+                fieldId: editingField.id,
+                field: values,
+              });
+            }}
+            onCancel={() => {
+              setEditingField(null);
+              onPreviewChange?.(null);
+            }}
             isSubmitting={updateField.isPending}
             submitLabel="Enregistrer"
           />
@@ -164,8 +233,9 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
                 <SortableFieldItem
                   key={field.id}
                   field={field}
-                  onEdit={setEditingField}
+                  onEdit={handleStartEdit}
                   onDelete={handleDelete}
+                  isReadOnly={isReadOnly}
                 />
               ))}
             </div>
@@ -175,14 +245,16 @@ export function FieldsManager({ formId }: FieldsManagerProps) {
         !isAdding && (
           <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center">
             <p className="text-muted-foreground">Aucun champ pour le moment.</p>
-            <Button
-              variant="outline"
-              className="mt-3"
-              onClick={() => setIsAdding(true)}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Ajouter un champ
-            </Button>
+            {!isReadOnly ? (
+              <Button
+                variant="outline"
+                className="mt-3"
+                onClick={handleStartCreate}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Ajouter un champ
+              </Button>
+            ) : null}
           </div>
         )
       )}

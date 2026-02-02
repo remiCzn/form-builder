@@ -58,6 +58,8 @@ export class FormsService {
 
   static async updateForm(id: string, form: UpdateForm) {
     try {
+      await this.ensureFormEditable(id);
+
       const now = Date.now();
 
       const [updated] = await db
@@ -80,5 +82,49 @@ export class FormsService {
       }
       throw err;
     }
+  }
+
+  static async publishForm(id: string) {
+    const existing = await this.getFormSummary(id);
+
+    if (existing.status === "PUBLISHED") {
+      throw status(409, "Formulaire deja publie");
+    }
+
+    const now = Date.now();
+
+    const [published] = await db
+      .update(formsTable)
+      .set({
+        status: "PUBLISHED",
+        publishedAt: new Date(now),
+        updatedAt: new Date(now),
+      })
+      .where(eq(formsTable.id, id))
+      .returning();
+
+    if (!published) throw status(404, "Form not found");
+    return published;
+  }
+
+  private static async ensureFormEditable(id: string) {
+    const form = await this.getFormSummary(id);
+
+    if (form.status === "PUBLISHED") {
+      throw status(409, "Formulaire deja publie");
+    }
+
+    return form;
+  }
+
+  private static async getFormSummary(id: string) {
+    const [form] = await db
+      .select({ id: formsTable.id, status: formsTable.status })
+      .from(formsTable)
+      .where(eq(formsTable.id, id))
+      .limit(1);
+
+    if (!form) throw status(404, "Form not found");
+    return form;
   }
 }

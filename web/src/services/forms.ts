@@ -12,8 +12,8 @@ import {
 } from "../../../backend/src/types/forms";
 import { AxiosError } from "axios";
 
-function useMutation<T>(
-  options: UseMutationOptions<T, AxiosError, CreateForm>,
+function useMutation<TData, TVariables>(
+  options: UseMutationOptions<TData, AxiosError, TVariables>,
 ) {
   return useMutationBase(options);
 }
@@ -41,6 +41,11 @@ const createForm = async (payload: CreateForm) => {
 
 const updateForm = async (id: string, payload: UpdateForm) => {
   const res = await client.patch<Form>(`/forms/${id}`, payload);
+  return res.data;
+};
+
+const publishForm = async (id: string) => {
+  const res = await client.post<Form>(`/forms/${id}/publish`);
   return res.data;
 };
 
@@ -77,6 +82,18 @@ export const useUpdateForm = (id: string) => {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: formKeys.list() });
       queryClient.setQueryData(formKeys.detail(updated.id), updated);
+    },
+  });
+};
+
+export const usePublishForm = (id: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => publishForm(id),
+    onSuccess: (published) => {
+      queryClient.invalidateQueries({ queryKey: formKeys.list() });
+      queryClient.setQueryData(formKeys.detail(published.id), published);
     },
   });
 };

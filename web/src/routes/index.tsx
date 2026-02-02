@@ -81,7 +81,7 @@ function RouteComponent() {
                           buttonVariants({ variant: "outline", size: "sm" }),
                         )}
                       >
-                        Modifier
+                        {form.status === "PUBLISHED" ? "Voir" : "Modifier"}
                       </Link>
                     </td>
                   </tr>
